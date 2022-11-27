@@ -1,0 +1,358 @@
+A1] Uber ride
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import calendar
+import matplotlib.pyplot as plt 
+from sklearn.model_selection import train_test_split
+from sklearn import preprocessing
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn import metrics
+from sklearn.metrics import mean_squared_error,mean_absolute_error,accuracy_score
+---------------
+df = pd.read_csv('uber.csv')
+df.head()
+--------------
+df.info()
+--------------
+df.describe()
+--------------
+df.rename(columns={'Unnamed: 0':'id'}, inplace=True)               # renaming unnamed column
+df["pickup_datetime"] = pd.to_datetime(df['pickup_datetime'])      # changing datatype to datetime
+df['day']     = df['pickup_datetime'].apply(lambda x:x.day)
+df['hour']    = df['pickup_datetime'].apply(lambda x:x.hour)
+df['weekday'] = df['pickup_datetime'].apply(lambda x:calendar.day_name[x.weekday()])
+df['month']   = df['pickup_datetime'].apply(lambda x:x.month)
+df['year']    = df['pickup_datetime'].apply(lambda x:x.year)
+df.head()
+---------------
+df = df[df['fare_amount']>0]                     # fare_amount can't be negative
+df = df[df['passenger_count']<=8]                # considering max passenger_count = 8
+df.drop(["id", "key", "pickup_datetime"], axis=1, inplace=True)
+df.head()
+---------------
+df.weekday = df.weekday.map({'Sunday':0,'Monday':1,'Tuesday':2,'Wednesday':3,'Thursday':4,'Friday':5,'Saturday':6})
+df.head()
+----------------
+df.info()
+----------------
+df.describe()
+----------------
+#dealing with missing values
+df.isna().sum()
+----------------
+df = df.dropna()
+df.isna().sum()
+---------------
+sns.boxplot(x='fare_amount', data=df)
+-----------------
+Q1 = np.percentile(df['fare_amount'], 25, interpolation='midpoint')
+Q3 = np.percentile(df['fare_amount'], 75, interpolation='midpoint')
+IQR = Q3 - Q1
+
+upper = Q3 + 1.5 * IQR
+lower = Q1 - 1.5 * IQR
+
+print("Upper = ", upper)
+print("Lower = ", lower)
+----------------------
+print("Outliers")
+df[(df['fare_amount']<lower) | (df['fare_amount']>upper)][{'fare_amount', 'day', 'month', 'year'}]
+----------------------
+print("old shape", df.shape)
+df = df[(df['fare_amount']>=lower) & (df['fare_amount']<=upper)]
+print("new shape", df.shape)
+--------------------------
+sns.boxplot(x='fare_amount', data=df)
+-----------------------------
+corr_matrix=round(df.corr(),2)
+corr_matrix
+--------------------------------
+plt.figure(figsize=(20,15))
+sns.heatmap(corr_matrix,annot=True)
+--------------------------------
+x = df.drop("fare_amount", axis=1)
+y = df['fare_amount']
+--------------------------------
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state = 1)
+x_train.head()
+---------------------------------
+x_test.head()
+-------------------------------
+x_train.shape
+-----------------------------
+x_test.shape
+--------------------------
+ss = preprocessing.StandardScaler()
+x_train =  ss.fit_transform(x_train)
+x_test = ss.transform(x_test)
+--------------------------------
+y_train = np.asarray(y_train)
+y_test = np.asarray(y_test)
+-------------------------------
+lrmodel = LinearRegression()
+lrmodel.fit(x_train, y_train)
+---------------------------
+y_pred = lrmodel.predict(x_test)
+df_preds = pd.DataFrame({'Actual: ': y_test, 'Predicted: ': y_pred})
+df_preds.head(10)
+------------------------------
+print("Regression Coefficients : ", lrmodel.coef_)
+print("Intercept : ", lrmodel.intercept_)
+--------------------------------
+print("Linear regression Model :")
+print("MSE:", mean_squared_error(y_test, y_pred))
+print("MAE:", mean_absolute_error(y_test, y_pred))
+print("RMSE:", np.sqrt(mean_squared_error(y_test, y_pred)))
+print('R2 Score:',metrics.r2_score(y_test, y_pred))
+---------------------------------------
+rfrmodel = RandomForestRegressor(n_estimators=10, random_state=1)
+-----------------------------------------------
+rfrmodel.fit(x_train,y_train)
+rfrmodel_pred= rfrmodel.predict(x_test)
+------------------------------------------------
+print("Random forest regression model : ")
+print("MSE:", mean_squared_error(y_test, rfrmodel_pred))
+print("MAE:", mean_absolute_error(y_test, rfrmodel_pred))
+print("RMSE:", np.sqrt(mean_squared_error(y_test, rfrmodel_pred)))
+print('R2 Score:',metrics.r2_score(y_test, rfrmodel_pred))
+---------------------------------------------------
+
+A-2] Classify Email using binary classification
+
+import numpy as np
+import pandas as pd
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split
+from sklearn import metrics
+from sklearn.metrics import mean_squared_error,mean_absolute_error
+from sklearn.metrics import accuracy_score
+-----------------------
+df = pd.read_csv('emails.csv')
+df
+-----------------------
+df.info()
+----------------
+df.describe()
+------------------
+df.isnull().sum()
+--------------
+x = df.iloc[:,1:3001]
+y = df.iloc[:,-1].values
+---------------
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state = 1)
+---------------
+knn = KNeighborsClassifier(n_neighbors=8)
+knn.fit(x_train, y_train)
+y_pred = knn.predict(x_test)
+--------------
+print("MSE:", mean_squared_error(y_test, y_pred))
+print("MAE:", mean_absolute_error(y_test, y_pred))
+print("RMSE:", np.sqrt(mean_squared_error(y_test, y_pred)))
+print("R2 Score:",metrics.r2_score(y_test, y_pred))
+print("Accuracy Score for KNN:", accuracy_score(y_test, y_pred))
+----------------
+svc = SVC(C=1.0, kernel='rbf', gamma='auto') 
+svc.fit(x_train, y_train)
+y_pred = svc.predict(x_test)
+--------------------
+print("MSE:", mean_squared_error(y_test, y_pred))
+print("MAE:", mean_absolute_error(y_test, y_pred))
+print("RMSE:", np.sqrt(mean_squared_error(y_test, y_pred)))
+print("R2 Score:",metrics.r2_score(y_test, y_pred))
+print("Accuracy Score for SVC:", accuracy_score(y_test, y_pred))
+-----------------------
+
+A-3] Given a bank customer, build a neural network
+
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+import seaborn as sns
+import matplotlib.pyplot as plt 
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from tensorflow import keras
+import warnings
+warnings.filterwarnings('ignore')
+------------------
+df = pd.read_csv('Churn_Modelling.csv')
+df
+-----------------
+df.info()
+------------
+df.describe()
+-------------
+df.isnull().sum()
+---------------
+df.drop(['RowNumber','Surname', 'CustomerId'], axis = 'columns', inplace =True)
+df
+------------
+le = LabelEncoder()
+df.Gender = le.fit_transform(df.Gender)
+df.Geography = le.fit_transform(df.Geography)
+df
+---------------
+df['Exited'].value_counts()
+------------------
+x = df.drop('Exited', axis= 'columns')
+y = df['Exited']
+------------------
+x.head()
+---------
+y.head()
+---------
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size= 0.2, random_state =1)
+-----------
+sc = StandardScaler()
+x_train = sc.fit_transform(x_train)
+x_test = sc.transform(x_test)
+-------------------
+model = keras.Sequential([
+    keras.layers.Dense(13, input_shape=(10,),activation='relu'),
+    keras.layers.Dense(15, activation='relu'),
+    keras.layers.Dense(1, activation='sigmoid')
+])
+
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+model.fit(x_train, y_train, epochs=100)
+---------------------------
+model.evaluate(x_test, y_test)
+----------------------------
+yp = model.predict(x_test)
+----------------------------
+y_pred = []
+for element in yp:
+    if element > 0.5:
+        y_pred.append(1)
+    else:
+        y_pred.append(0)
+--------------------------
+cm = tf.math.confusion_matrix(labels = y_test, predictions = y_pred)
+plt.figure(figsize = (10,7))
+sns.heatmap(cm, annot=True, fmt='d')
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+-----------------------------
+
+A-4] Gradient Descent
+
+cur_x = 2                     # The algorithm starts at x=2
+rate = 0.01                   # Learning rate
+precision = 0.000001          # This tells us when to stop the algorithm
+previous_step_size = 1 
+max_iters = 10000             # maximum number of iterations
+iters = 0                     # iteration counter
+df = lambda x: 2*(x+3)        # Gradient of our function
+-------------------------------
+while previous_step_size > precision and iters < max_iters:
+    prev_x = cur_x                                # Store current x value in prev_x
+    cur_x = cur_x - rate * df(prev_x)             # Grad descent
+    previous_step_size = abs(cur_x - prev_x)      # Change in x
+    iters = iters+1                               # iteration count
+    print("Iteration",iters,"\nX value is",cur_x) # Print iterations
+------------------------------------
+print("The local minimum occurs at", cur_x)
+----------------------
+
+A-5] KNN algorithm on diabetes.csv
+
+import pandas as pd import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+%matplotlib inline import warnings
+warnings.filterwarnings('ignore')
+from sklearn.model_selection import train_test_split from sklearn.svm import SVC
+from sklearn import metrics
+--------------------------------
+df=pd.read_csv('diabetes.csv')
+df.columns
+---------------------------------
+Index(['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'Pedigree', 'Age', 'Outcome'],
+dtype='object')
+--------------------------
+df.isnull().sum()
+------------------------
+X = df.drop('Outcome',axis = 1) y = df['Outcome']
+from sklearn.preprocessing import scale X = scale(X)
+----------------------------
+# split into train and test
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3, random_state = 42)
+--------------------------
+from sklearn.neighbors import KNeighborsClassifier knn = KNeighborsClassifier(n_neighbors=7)
+knn.fit(X_train, y_train)
+-------------------------
+y_pred = knn.predict(X_test)
+print("Confusion matrix: ")
+-----------------------------
+cs = metrics.confusion_matrix(y_test,y_pred)
+print(cs)
+---------------------------------
+print("Acccuracy ",metrics.accuracy_score(y_test,y_pred)) 
+--------------------------------------
+total_misclassified = cs[0,1] + cs[1,0] print(total_misclassified)
+total_examples = cs[0,0]+cs[0,1]+cs[1,0]+cs[1,1] print(total_examples)
+print("Error rate",total_misclassified/total_examples)
+print("Error rate ",1-metrics.accuracy_score(y_test,y_pred))
+------------------------------------
+print("Precision score",metrics.precision_score(y_test,y_pred))
+print("Recall score ",metrics.recall_score(y_test,y_pred))
+--------------------------------------
+print("Classification report ",metrics.classification_report(y_test,y_pred))
+--------------------------------------
+
+
+A-6] K-means clustering on sales_data
+
+import numpy as np
+import pandas as pd 
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+---------------------------
+df = pd.read_csv("sales_data_sample.csv", encoding='latin1')
+-------------------------
+df.head()
+----------------------
+df.describe()
+----------------------
+df.info()
+-------------------
+X = df.iloc[:, [1, 3]].values
+X
+-------------------
+WCSS = [] # Within-Cluster Sum of Square
+
+for i in range(1,11):
+    kmeans = KMeans(n_clusters = i, init = 'k-means++', random_state = 42)
+    kmeans.fit(X)
+    WCSS.append(kmeans.inertia_)
+
+plt.plot(range(1,11), WCSS)
+plt.title("The elbow method")
+plt.xlabel("Number of cluster")
+plt.ylabel('WCSS') 
+plt.show()  
+------------------------------
+#The point at which the elbow shape is created is 3, that is, our K value or an optimal number of clusters is 3.
+kmeans = KMeans(n_clusters = 3, init = "k-means++", random_state = 42)
+y_kmeans = kmeans.fit_predict(X)
+------------------------------
+y_kmeans
+-------------------------------
+#Visualising the cluster
+plt.scatter(X[y_kmeans == 0,0], X[y_kmeans == 0,1], s=60, c = 'red', label='Cluster1')
+plt.scatter(X[y_kmeans == 1,0], X[y_kmeans == 1,1], s=60, c='blue', label='Cluster2')
+plt.scatter(X[y_kmeans == 2,0], X[y_kmeans == 2,1], s=60, c='green', label='Cluster3')
+plt.scatter(kmeans.cluster_centers_[:,0], kmeans.cluster_centers_[:,1], s=100, c = 'black', label ='Centroids')
+
+plt.xlabel('QUANTITYORDERED') 
+plt.ylabel('ORDERLINENUMBER') 
+plt.legend()
+plt.show()
+------------------------------------
+

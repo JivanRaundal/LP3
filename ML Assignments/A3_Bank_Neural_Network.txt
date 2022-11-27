@@ -1,0 +1,73 @@
+A-3] Given a bank customer, build a neural network
+
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+import seaborn as sns
+import matplotlib.pyplot as plt 
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from tensorflow import keras
+import warnings
+warnings.filterwarnings('ignore')
+------------------
+df = pd.read_csv('Churn_Modelling.csv')
+df
+-----------------
+df.info()
+------------
+df.describe()
+-------------
+df.isnull().sum()
+---------------
+df.drop(['RowNumber','Surname', 'CustomerId'], axis = 'columns', inplace =True)
+df
+------------
+le = LabelEncoder()
+df.Gender = le.fit_transform(df.Gender)
+df.Geography = le.fit_transform(df.Geography)
+df
+---------------
+df['Exited'].value_counts()
+------------------
+x = df.drop('Exited', axis= 'columns')
+y = df['Exited']
+------------------
+x.head()
+---------
+y.head()
+---------
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size= 0.2, random_state =1)
+-----------
+sc = StandardScaler()
+x_train = sc.fit_transform(x_train)
+x_test = sc.transform(x_test)
+-------------------
+model = keras.Sequential([
+    keras.layers.Dense(13, input_shape=(10,),activation='relu'),
+    keras.layers.Dense(15, activation='relu'),
+    keras.layers.Dense(1, activation='sigmoid')
+])
+
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+model.fit(x_train, y_train, epochs=100)
+---------------------------
+model.evaluate(x_test, y_test)
+----------------------------
+yp = model.predict(x_test)
+----------------------------
+y_pred = []
+for element in yp:
+    if element > 0.5:
+        y_pred.append(1)
+    else:
+        y_pred.append(0)
+--------------------------
+cm = tf.math.confusion_matrix(labels = y_test, predictions = y_pred)
+plt.figure(figsize = (10,7))
+sns.heatmap(cm, annot=True, fmt='d')
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+-----------------------------

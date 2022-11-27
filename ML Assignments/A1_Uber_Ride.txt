@@ -1,0 +1,121 @@
+A1] Uber ride
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import calendar
+import matplotlib.pyplot as plt 
+from sklearn.model_selection import train_test_split
+from sklearn import preprocessing
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn import metrics
+from sklearn.metrics import mean_squared_error,mean_absolute_error,accuracy_score
+---------------
+df = pd.read_csv('uber.csv')
+df.head()
+--------------
+df.info()
+--------------
+df.describe()
+--------------
+df.rename(columns={'Unnamed: 0':'id'}, inplace=True)               # renaming unnamed column
+df["pickup_datetime"] = pd.to_datetime(df['pickup_datetime'])      # changing datatype to datetime
+df['day']     = df['pickup_datetime'].apply(lambda x:x.day)
+df['hour']    = df['pickup_datetime'].apply(lambda x:x.hour)
+df['weekday'] = df['pickup_datetime'].apply(lambda x:calendar.day_name[x.weekday()])
+df['month']   = df['pickup_datetime'].apply(lambda x:x.month)
+df['year']    = df['pickup_datetime'].apply(lambda x:x.year)
+df.head()
+---------------
+df = df[df['fare_amount']>0]                     # fare_amount can't be negative
+df = df[df['passenger_count']<=8]                # considering max passenger_count = 8
+df.drop(["id", "key", "pickup_datetime"], axis=1, inplace=True)
+df.head()
+---------------
+df.weekday = df.weekday.map({'Sunday':0,'Monday':1,'Tuesday':2,'Wednesday':3,'Thursday':4,'Friday':5,'Saturday':6})
+df.head()
+----------------
+df.info()
+----------------
+df.describe()
+----------------
+#dealing with missing values
+df.isna().sum()
+----------------
+df = df.dropna()
+df.isna().sum()
+---------------
+sns.boxplot(x='fare_amount', data=df)
+-----------------
+Q1 = np.percentile(df['fare_amount'], 25, interpolation='midpoint')
+Q3 = np.percentile(df['fare_amount'], 75, interpolation='midpoint')
+IQR = Q3 - Q1
+
+upper = Q3 + 1.5 * IQR
+lower = Q1 - 1.5 * IQR
+
+print("Upper = ", upper)
+print("Lower = ", lower)
+----------------------
+print("Outliers")
+df[(df['fare_amount']<lower) | (df['fare_amount']>upper)][{'fare_amount', 'day', 'month', 'year'}]
+----------------------
+print("old shape", df.shape)
+df = df[(df['fare_amount']>=lower) & (df['fare_amount']<=upper)]
+print("new shape", df.shape)
+--------------------------
+sns.boxplot(x='fare_amount', data=df)
+-----------------------------
+corr_matrix=round(df.corr(),2)
+corr_matrix
+--------------------------------
+plt.figure(figsize=(20,15))
+sns.heatmap(corr_matrix,annot=True)
+--------------------------------
+x = df.drop("fare_amount", axis=1)
+y = df['fare_amount']
+--------------------------------
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state = 1)
+x_train.head()
+---------------------------------
+x_test.head()
+-------------------------------
+x_train.shape
+-----------------------------
+x_test.shape
+--------------------------
+ss = preprocessing.StandardScaler()
+x_train =  ss.fit_transform(x_train)
+x_test = ss.transform(x_test)
+--------------------------------
+y_train = np.asarray(y_train)
+y_test = np.asarray(y_test)
+-------------------------------
+lrmodel = LinearRegression()
+lrmodel.fit(x_train, y_train)
+---------------------------
+y_pred = lrmodel.predict(x_test)
+df_preds = pd.DataFrame({'Actual: ': y_test, 'Predicted: ': y_pred})
+df_preds.head(10)
+------------------------------
+print("Regression Coefficients : ", lrmodel.coef_)
+print("Intercept : ", lrmodel.intercept_)
+--------------------------------
+print("Linear regression Model :")
+print("MSE:", mean_squared_error(y_test, y_pred))
+print("MAE:", mean_absolute_error(y_test, y_pred))
+print("RMSE:", np.sqrt(mean_squared_error(y_test, y_pred)))
+print('R2 Score:',metrics.r2_score(y_test, y_pred))
+---------------------------------------
+rfrmodel = RandomForestRegressor(n_estimators=10, random_state=1)
+-----------------------------------------------
+rfrmodel.fit(x_train,y_train)
+rfrmodel_pred= rfrmodel.predict(x_test)
+------------------------------------------------
+print("Random forest regression model : ")
+print("MSE:", mean_squared_error(y_test, rfrmodel_pred))
+print("MAE:", mean_absolute_error(y_test, rfrmodel_pred))
+print("RMSE:", np.sqrt(mean_squared_error(y_test, rfrmodel_pred)))
+print('R2 Score:',metrics.r2_score(y_test, rfrmodel_pred))
+---------------------------------------------------

@@ -1,0 +1,25 @@
+Step 1: Go to Chrome Web Store Extensions Section.
+Step 2: Search MetaMask.
+Step 3: Check the number of downloads to make sure that 
+Step 4: Click the Add to Chrome button.
+Step 5: Once installation is complete this page will be displayed. 
+	Click on the Get Started button.the legitimate MetaMask is being installed, as hackers might try to make clones of it.
+Step 6: This is the first time creating a wallet, so click the Create a Wallet button. 
+	If there is already a wallet then import the already created using the Import Wallet button.
+Step 7: Click I Agree button to allow data to be collected to help improve MetaMask or else click the No Thanks button. 
+	The wallet can still be created even if the user will click on the No Thanks button.
+Step 8: Create a password for your wallet. This password is to be entered every time the browser is 
+	launched and wants to use MetaMask. A new password needs to be created if chrome is uninstalled or if there is a switching of browsers. 
+	In that case, go through the Import Wallet button. This is because MetaMask stores the keys in the browser. Agree to Terms of Use.
+Step 9: Click on the dark area which says Click here to reveal secret words to get your secret phrase. 
+Step 10: This is the most important step. Back up your secret phrase properly. Do not store your secret phrase on your computer.
+	 Please read everything on this screen until you understand it completely before proceeding. 
+	The secret phrase is the only way to access your wallet if you forget your password. Once done click the Next button.
+Step 11: Click the buttons respective to the order of the words in your seed phrase. 
+	In other words, type the seed phrase using the button on the screen. 
+	If done correctly the Confirm button should turn blue.
+Step 12: Click the Confirm button. Please follow the tips mentioned.
+Step 13: One can see the balance and copy the address of the account by clicking on the Account 1 area.
+Step 14: One can access MetaMask in the browser by clicking the Foxface icon on the top right. 
+	If the Foxface icon is not visible, then click on the puzzle piece icon right next to it.
+ 
